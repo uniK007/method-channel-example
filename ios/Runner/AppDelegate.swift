@@ -18,11 +18,23 @@ import UserNotifications
                 result(FlutterMethodNotImplemented)
             }
         }
+
+        let settingsChannel = FlutterMethodChannel(name: "app_settings",
+                                                   binaryMessenger: controller.binaryMessenger)
+        settingsChannel.setMethodCallHandler { (call, result) in
+            if call.method == "openAppSettings" {
+                self.openAppSettings()
+                result(nil)
+            } else {
+                result(FlutterMethodNotImplemented)
+            }
+        }
+
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  private func requestNotificationPermission(result: @escaping FlutterResult) {
+    private func requestNotificationPermission(result: @escaping FlutterResult) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
                 print("Failed to request permission: \(error)")
@@ -30,6 +42,13 @@ import UserNotifications
             } else {
                 result(granted)
             }
+        }
+    }
+
+    private func openAppSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString),
+           UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
 }

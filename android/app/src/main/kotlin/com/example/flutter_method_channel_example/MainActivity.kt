@@ -1,10 +1,13 @@
 package com.example.flutter_method_channel_example
 
 import io.flutter.embedding.android.FlutterActivity
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.FlutterEngine
@@ -12,18 +15,29 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "notification_permission"
+    private val CHANNEL_NOTIFICATION = "notification_permission"
+    private val CHANNEL_SETTINGS = "app_settings"
     private val REQUEST_CODE = 1001
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NOTIFICATION).setMethodCallHandler { call, result ->
             if (call.method == "requestPermission") {
                 requestNotificationPermission(result)
             } else {
                 result.notImplemented()
             }
         }
+
+         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_SETTINGS)
+            .setMethodCallHandler { call, result ->
+                if (call.method == "openAppSettings") {
+                    openAppSettings()
+                    result.success(null)
+                } else {
+                    result.notImplemented()
+                }
+            }
     }
 
     private fun requestNotificationPermission(result: MethodChannel.Result) {
@@ -37,5 +51,13 @@ class MainActivity: FlutterActivity() {
         } else {
             result.success(true)
         }
+    }
+
+    private fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:$packageName")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        startActivity(intent)
     }
 }
