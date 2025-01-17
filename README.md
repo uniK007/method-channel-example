@@ -1,3 +1,3 @@
 # flutter_method_channel_example
 
-A new Flutter project.
+A Sample Flutter project to use method channel for notification permission on native side.
